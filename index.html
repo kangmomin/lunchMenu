@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>컴과고 - 오늘의 급식</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+
+    <div id="root">
+        <div id="image">
+            <h3>2023년 04월 18일</h3>
+            <h1>오늘의</h1>
+            <pre id="item"></pre>
+        </div>
+    </div>
+
+    <script>
+
+        const updateMeal = () => {
+            
+            let today = new Date()
+
+            const displayDate = document.querySelector("#image > h3")
+            const title = document.querySelector("#image > h1")
+
+            displayDate.innerText = getKoreanFormat(today)
+            
+            if (today.getHours() >= 13) {
+                today.setDate(today.getDate() + 1)
+                title.innerText = "내일의"
+            } else {
+                title.innerText = "오늘의"
+            } 
+            
+            $.ajax({
+                type: "GET",
+                url: `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pIndex=1&pSize=100&ATPT_OFCDC_SC_CODE=C10&SD_SCHUL_CODE=7150337&MLSV_YMD=${getFormatDate(today)}`,
+                success: val => {
+                    const meal = JSON.parse(val).mealServiceDietInfo[1].row[0].DDISH_NM.split("<br/>").map(data => data.split(" ")[0])
+                    document.getElementById("item").innerText = ""
+                    meal.forEach(element => {
+                        document.getElementById("item").innerText += element + "\n"
+                    }); 
+                },
+            })
+        }
+
+        updateMeal()
+        setInterval(updateMeal(), 60 * 60 * 1000)
+
+        function getFormatDate(date){
+            var year = date.getFullYear();              //yyyy
+            var month = (1 + date.getMonth());          //M
+            month = month >= 10 ? month : '0' + month;  //month 두자리로 저장
+            var day = date.getDate();                   //d
+            day = day >= 10 ? day : '0' + day;          //day 두자리로 저장
+            return  year + '' + month + '' + day;       //'-' 추가하여 yyyy-mm-dd 형태 생성 가능
+        }
+
+        function getKoreanFormat(date) {
+            const year = date.getFullYear();
+            const month = (1 + date.getMonth());
+            const day = date.getDate();
+            return `${year}년 ${month}월 ${day}일 `;
+        }
+
+    </script>
+
+    <style>
+        @font-face {
+            font-family: 'TTTogether';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/TTTogetherA.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'ONE-Mobile-Title';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/ONE-Mobile-Title.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        * {
+            font-family: 'TTTogether';
+            margin: 0;
+            padding: 0;
+        }
+
+        #root {
+            display: flex;
+            flex-direction: row;
+            width: 100%;    
+            height: 100%;
+            
+        }
+        
+        #image {
+            background-image: url(./todaysMenuTemplate.png);
+            background-repeat: no-repeat;
+            
+            width: 60%;
+            height: 100%;
+            margin: auto auto;
+
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h1 {
+            position: relative;
+            top: 100px;
+            left: 20%;
+            font-weight: bolder;
+            font-size: 100.4pt;
+            color: #FFB740;
+            text-shadow: 0px 10px rgb(61, 178, 255, 0.5);
+            -webkit-text-stroke: 2px white;
+        }
+        
+        h3 {
+            position: relative;
+            top: 80px;
+            left: 80%;
+            transform: translate(-50%);
+            font-weight: bolder;
+            font-size: 35pt;
+            color: #1187CF;
+        }
+
+        #item {
+            font-family: "ONE-Mobile-Title";
+            width: fit-content;
+            position: relative;
+            left: 47%;
+            top: 23%;
+            text-align: center;
+            font-size: 30pt;
+            transform: translateX(-50%);
+        }
+    </style>
+</body>
+</html>
